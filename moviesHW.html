@@ -54,6 +54,7 @@
                 movieForm.reset();
             });
             const actorForm = document.getElementById('actorForm');
+            let actors = []
             actorForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 createActor();
@@ -62,10 +63,8 @@
             function createActor() {
                 const name = document.getElementById('actorName').value;
                 const role = document.getElementById('actorRole').value;
-                return {
-                    name: name,
-                    role: role,
-                };
+                actors.push(name,role);
+                console.log(actors);
             }
             function createMovie(){
                 const id = document.getElementById('movieId').value;
@@ -77,7 +76,6 @@
                 const year = document.getElementById('movieYear').checked;
                 const name = document.getElementById('actor-name').checked;
                 const role = document.getElementById('actor-role').checked;
-                let actors =+ createActor()
                 return {
                     id: id,
                     title: title,
@@ -88,9 +86,6 @@
                     budget: budget,
                     actors: [{name: actors.name, role: actors.role}],
                 };
-                actors.forEach((actor) => {
-
-                }
             }
         });
         async function fetchMovies() {
@@ -235,7 +230,7 @@
                 </div>
             </div>
 
-            <button type="button" id="add-actor-btn" class="btn btn-secondary mt-2">Add Another Actor</button>
+            <button type="submit" id="add-actor-btn" class="btn btn-secondary mt-2">Add Another Actor</button>
             <br>
             <br>
             <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
