@@ -11,6 +11,24 @@
             background-image: linear-gradient(to left, #734ea7, #6679e2);
             color: white;
         }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+        .grid-item{
+            margin: 25px 10px 10px 10px;
+        }
+        .actor-card{
+            background-color: #f6f7f8;
+            width: auto;
+        }
+        .actor-container{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
     </style>
     <script>
         function getIdFromURL() {
@@ -20,16 +38,20 @@
 
         function loadMovies() {
             let mId = getIdFromURL();
-            const theOne = moviesData.find(movie => movie.id === mId);
-
-            if (theOne) {
-                console.log("Found:", theOne.name);
-                displayMovieInfo(theOne);
-                displayMovieCrew(theOne);
-                displayMovieHeader(theOne);
-            } else {
-                console.log("Not Found.");
-            }
+            fetch(`http://localhost:3000/movies?id=${mId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const movie = data[0]
+                        console.log(movie);
+                        console.log("Found:", movie.title);
+                        displayMovieHeader(movie);
+                        displayMovieInfo(movie);
+                        displayMovieCrew(movie);
+                    } else {
+                        console.log("Not Found.");
+                    }
+                });
         }
 
         function displayMovieInfo(movie) {
@@ -48,14 +70,26 @@
         function displayMovieCrew(movie) {
             const body = document.getElementById("castCrewBody")
             body.innerHTML = `<p class="card-text"><strong>Main Cast:</strong></p>`;
+            body.classList.add("actor-container", "card");
             movie.actors.forEach(actor => {
-                body.innerHTML += `
-<div class="card" style="width: 6rem;">
-  <div class="card-body">
-    <h5 class="card-title">${actor.name}</h5>
-    <h6 class="card-subtitle mb-2 text-muted">${actor.role}</h6>
-  </div>
-</div>`;
+                const card = document.createElement("div");
+                card.classList.add("actor-card", "card-body");
+                let name = document.createElement("h5");
+                name.classList.add("card-title");
+                let role = document.createElement("h6");
+                role.classList.add("card-subtitle", "mb-2", "text-muted");
+                name.innerHTML = actor.name;
+                role.innerHTML = actor.role;
+                card.appendChild(name);
+                card.appendChild(role);
+                body.appendChild(card);
+//                 body.innerHTML += `
+// <div class="card actor-container">
+//   <div class="card-body actor-card">
+//     <h5 class="card-title">${actor.name}</h5>
+//     <h6 class="card-subtitle mb-2 text-muted">${actor.role}</h6>
+//   </div>
+// </div>`;
             });
         }
         function displayMovieHeader(movie) {
@@ -97,14 +131,14 @@
 </nav>
 <div id="infoHeader"></div>
 
-<div>
-    <div id="infoBody">
-
-    </div>
-    <div>
+<div class="container grid-container">
+    <div id="infoBody" class="card grid-item"></div>
+    <div class="card grid-item">
         <h5 class="card-header">Cast & Crew</h5>
         <div class="card-body" id="castCrewBody"></div>
     </div>
+
+
     <a href="moviesHW.html"
        class="btn btn-secondary btn-sm">
         Back to Movies! </a>
