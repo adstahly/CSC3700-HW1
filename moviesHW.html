@@ -11,11 +11,12 @@
             text-align: center;
             padding: 25px;
         }
-        .add-movie-form {
+        #add-movie-form {
             background-color: #f5f5f5;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
         }
         .form-group {
             margin-bottom: 15px;
@@ -23,15 +24,77 @@
         .card{
             margin-top: 15px;
         }
+        .toggle-form-button {
+            padding: 10px 15px;
+            background-color: #198653;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 20px 0;
+        }
     </style>
     <script>
         let moviesData = [];
         const PORT = 3000;
         let BASE_URL = `http://localhost:${PORT}/movies`;
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleFormButton = document.getElementById('toggleFormButton');
+            toggleFormButton.addEventListener('click', displayAddMovieForm);
+            const movieForm = document.getElementById('addMovieForm');
+            movieForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newMovie = createMovie();
+                const savedMovie = await addMovie(newMovie);
+                alert(`${savedMovie.title} saved!`);
+                displayMovies();
+                movieForm.reset();
+            });
+            const actorForm = document.getElementById('actorForm');
+            actorForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                createActor();
+                actorForm.reset();
+            })
+            function createActor() {
+                const name = document.getElementById('actorName').value;
+                const role = document.getElementById('actorRole').value;
+                return {
+                    name: name,
+                    role: role,
+                };
+            }
+            function createMovie(){
+                const id = document.getElementById('movieId').value;
+                const title = document.getElementById('movieTitle').value;
+                const director = document.getElementById('movieDirector').value;
+                const budget = parseFloat(document.getElementById('movieBudget').value);
+                const boxOffice = parseFloat(document.getElementById('movieBoxOffice').value);
+                const description = document.getElementById('movieDescription').value;
+                const year = document.getElementById('movieYear').checked;
+                const name = document.getElementById('actor-name').checked;
+                const role = document.getElementById('actor-role').checked;
+                let actors =+ createActor()
+                return {
+                    id: id,
+                    title: title,
+                    description: description,
+                    year: year,
+                    boxOffice: boxOffice,
+                    director: director,
+                    budget: budget,
+                    actors: [{name: actors.name, role: actors.role}],
+                };
+                actors.forEach((actor) => {
+
+                }
+            }
+        });
         async function fetchMovies() {
             try {
-                console.log(BASE_URL);
                 const response = await fetch(BASE_URL);
                 console.log('Response Status', response.status);
                 console.log(`Response Ok`, response.ok);
@@ -47,8 +110,21 @@
             }
         }
 
+        async function addMovie(newMovie) {
+            const response = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newMovie)
+            });
+
+            return response.json();
+        }
+
         function displayMovies() {
             let body = document.getElementById("moviesTableBody");
+            console.log(moviesData);
             moviesData.forEach(function (movie) {
                 const div = document.createElement("div");
                 div.classList.add("card");
@@ -65,6 +141,17 @@
                 </div>`;
                 body.appendChild(div);
             });
+        }
+        function displayAddMovieForm() {
+            const toggleFormButton = document.getElementById('toggleFormButton');
+            const addMovieForm = document.getElementById('add-movie-form');
+            if (addMovieForm.style.display === 'none' || addMovieForm.style.display === ``) {
+                addMovieForm.style.display = 'block';
+                toggleFormButton.innerHTML = 'Hide Form';
+            } else {
+                addMovieForm.style.display = 'none';
+                toggleFormButton.innerHTML = 'Add Sample Movie';
+            }
         }
     </script>
 </head>
@@ -99,9 +186,10 @@
 
 
 <div class="container">
-    <div class="add-movie-form">
-        <h2>Add Sample Movie</h2>
+    <button id="toggleFormButton" class="toggle-form-button">Add Sample Movie</button>
+    <div id="add-movie-form">
         <form id="addMovieForm">
+            <h3> Add Sample Movie</h3>
             <div class="form-group">
                 <label for="movieId">ID:</label>
                 <input type="number" id="movieId" required>
@@ -116,7 +204,7 @@
             </div>
             <div class="form-group">
                 <label for="movieYear">Year:</label>
-                <input type="number" min="1888" id="movieYear" required></input>
+                <input type="number" min="1888" id="movieYear" required>
             </div>
             <div class="form-group">
                 <label for="movieBoxOffice">Box Office ($):</label>
@@ -127,11 +215,13 @@
                 <input type="text" id="movieDirector" required>
             </div>
             <div class="form-group">
-                <label for="movieBudget">Budget:</label>
+                <label for="movieBudget">Budget ($):</label>
                 <input type="text" id="movieBudget" required>
             </div>
+
             <div id="actors-container">
                 <div class="actor-input-group">
+                    <form id="actor-form">
                     <div class="form-group">
                         <label for="actor-name">Actor Name:</label>
                         <input type="text" id="actor-name" required>
@@ -140,12 +230,15 @@
                         <label for="actor-role">Role:</label>
                         <input type="text" id="actor-role" required>
                     </div>
+                        </form>
                     <hr>
                 </div>
             </div>
 
             <button type="button" id="add-actor-btn" class="btn btn-secondary mt-2">Add Another Actor</button>
-            <button type="submit">Add Movie</button>
+            <br>
+            <br>
+            <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
         </form>
     </div>
 <div class="container" id="moviesTableBody">

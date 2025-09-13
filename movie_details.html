@@ -10,6 +10,7 @@
             text-align: left;
             background-image: linear-gradient(to left, #734ea7, #6679e2);
             color: white;
+            padding: 30px 0 20px 25px;
         }
         .grid-container {
             display: grid;
@@ -23,11 +24,22 @@
         .actor-card{
             background-color: #f6f7f8;
             width: auto;
+            padding: 10px;
         }
         .actor-container{
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .cast-text{
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .btn-secondary{
+            position: relative;
+            left: 10px;
+            justify-self: start;
         }
     </style>
     <script>
@@ -64,32 +76,28 @@
     <p class="card-text"><strong>Budget: </strong> $${movie.budget}</p>
     <p></p>
     <p class="card-text"><strong>Box Office: </strong> $${movie.boxOffice}</p>
+   </div>
   `;
         }
 
         function displayMovieCrew(movie) {
             const body = document.getElementById("castCrewBody")
-            body.innerHTML = `<p class="card-text"><strong>Main Cast:</strong></p>`;
-            body.classList.add("actor-container", "card");
+            body.classList.add("actor-container");
             movie.actors.forEach(actor => {
                 const card = document.createElement("div");
-                card.classList.add("actor-card", "card-body");
+                card.classList.add( "card");
+                let cardBody = document.createElement("div");
+                cardBody.classList.add("card-body", "actor-card");
                 let name = document.createElement("h5");
                 name.classList.add("card-title");
                 let role = document.createElement("h6");
                 role.classList.add("card-subtitle", "mb-2", "text-muted");
                 name.innerHTML = actor.name;
                 role.innerHTML = actor.role;
-                card.appendChild(name);
-                card.appendChild(role);
+                cardBody.appendChild(name);
+                cardBody.appendChild(role);
+                card.appendChild(cardBody);
                 body.appendChild(card);
-//                 body.innerHTML += `
-// <div class="card actor-container">
-//   <div class="card-body actor-card">
-//     <h5 class="card-title">${actor.name}</h5>
-//     <h6 class="card-subtitle mb-2 text-muted">${actor.role}</h6>
-//   </div>
-// </div>`;
             });
         }
         function displayMovieHeader(movie) {
@@ -135,13 +143,14 @@
     <div id="infoBody" class="card grid-item"></div>
     <div class="card grid-item">
         <h5 class="card-header">Cast & Crew</h5>
-        <div class="card-body" id="castCrewBody"></div>
+        <div class="card-body" id="castCrewBody">
+            <p class="card-text cast-text"><strong>Main Cast:</strong></p>
+        </div>
     </div>
-
-
     <a href="moviesHW.html"
        class="btn btn-secondary btn-sm">
         Back to Movies! </a>
+
 </div>
 
 <footer class="bg-dark text-white p-3 mt-5">
