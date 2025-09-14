@@ -11,32 +11,25 @@
             text-align: center;
             padding: 25px;
         }
+
         #add-movie-div {
             background-color: #f5f5f5;
             padding: 20px;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: none;
         }
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
-        }
-        .card{
-            margin-top: 15px;
-        }
-        .toggle-form-button {
-            padding: 10px 15px;
-            background-color: #198653;
+        .success-message {
+            background-color: #4CAF50;
             color: white;
-            border: none;
+            padding: 10px;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            display: block;
-            margin: 20px 0;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        .card-title {
+            margin-bottom: 1rem;
         }
     </style>
     <script>
@@ -51,45 +44,59 @@
 
             const addActorBtn = document.getElementById('addActorBtn');
             addActorBtn.addEventListener('click', handleAddActor);
+
+            const successMessage = document.getElementById('successMessage');
+            const successActor = document.getElementById('successActor');
+
+            function handleMovieSubmit(e) {
+                e.preventDefault();
+                handleAddActor()
+                const newMovie = createMovie();
+                displayMovieCard(newMovie);
+                successActor.style.display = 'none';
+                successMessage.style.display = 'block';
+                movieForm.reset();
+                actors = [];
+            }
+
+            function displayAddMovieForm() {
+                const toggleFormButton = document.getElementById('toggleFormButton');
+                const addMovieDiv = document.getElementById('add-movie-div');
+                if (addMovieDiv.style.display === 'none' || addMovieDiv.style.display === ``) {
+                    addMovieDiv.style.display = 'block';
+                    toggleFormButton.textContent = 'Hide Form';
+                } else {
+                    addMovieDiv.style.display = 'none';
+                    successMessage.style.display = 'none';
+                    successActor.style.display = 'none';
+                    toggleFormButton.textContent = 'Add Sample Movie';
+                }
+            }
+
+            function handleAddActor() {
+                const actorName = document.getElementById('actor-name');
+                const actorRole = document.getElementById('actor-role');
+                const name = actorName.value;
+                const role = actorRole.value;
+
+                if (name && role) {
+                    actors.push({name: name, role: role});
+                    console.log(actors);
+                    actorName.value = '';
+                    actorRole.value = '';
+                    successActor.style.backgroundColor = '#4CAF50';
+                    successActor.textContent = 'Actor Successfully Added';
+                } else {
+                    successActor.style.backgroundColor = '#f44336';
+                    successActor.textContent = `Please Enter a Name and Role.`;
+                }
+                successActor.style.display = 'block';
+            }
         });
         const PORT = 3000;
         const BASE_URL = `http://localhost:${PORT}/movies`;
         let moviesData = [];
         let actors = []
-
-        const movieDataString = sessionStorage.getItem('selectedMovie');
-        if (movieDataString) {
-            const movie = JSON.parse(movieDataString);
-            displayMovieCard(movie);
-        }
-
-        function handleMovieSubmit(e) {
-            const movieForm = document.getElementById('addMovieForm');
-            e.preventDefault();
-            handleAddActor()
-            const newMovie = createMovie();
-            displayMovieCard(newMovie);
-            movieForm.reset();
-            actors = [];
-        }
-
-
-
-        function handleAddActor() {
-            const actorName = document.getElementById('actor-name');
-            const actorRole = document.getElementById('actor-role');
-            const name = actorName.value;
-            const role = actorRole.value;
-
-            if (name && role) {
-                actors.push({name: name, role: role});
-                console.log(actors);
-                actorName.value = '';
-                actorRole.value = '';
-            } else {
-                alert('Please enter both a name and a role');
-            }
-        }
 
         function createMovie() {
             const id = document.getElementById('movieId').value;
@@ -127,6 +134,7 @@
                 console.log("Error Fetching Movies ->", error);
             }
         }
+
         function displayMovies() {
             moviesData.forEach(function (movie) {
                 displayMovieCard(movie);
@@ -134,15 +142,13 @@
         }
 
         function displayMovieCard(movie) {
-            console.log(movie.title);
             let body = document.getElementById("moviesTableBody");
             const div = document.createElement("div");
-            div.classList.add("card");
+            div.classList.add("card", "mt-3");
             div.innerHTML = `
             <h5 class="card-header">${movie.title} (${movie.year})</h5>
                 <div class="card-body">
                     <p class="card-title">${movie.description} </p>
-                    <p></p>
                     <p class="card-text"><strong>Box Office:</strong> ${movie.boxOffice} </p>
                     <button class="btn btn-primary btn-sm view-details-btn">
                         View Details
@@ -154,25 +160,11 @@
                 sessionStorage.setItem('selectedMovie', JSON.stringify(movie));
                 window.location.href = `movie_details.html`;
             });
-            console.log(div);
             body.appendChild(div);
         }
-
-        function displayAddMovieForm() {
-            const toggleFormButton = document.getElementById('toggleFormButton');
-            const addMovieDiv = document.getElementById('add-movie-div');
-            if (addMovieDiv.style.display === 'none' || addMovieDiv.style.display === ``) {
-                addMovieDiv.style.display = 'block';
-                toggleFormButton.innerHTML = 'Hide Form';
-            } else {
-                addMovieDiv.style.display = 'none';
-                toggleFormButton.innerHTML = 'Add Sample Movie';
-            }
-        }
-
     </script>
 </head>
-<body>
+<body class="d-flex flex-column vh-100">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="#">
@@ -189,7 +181,7 @@
                     <a class="nav-link active" href="moviesHW.html">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="moviesHW.html">Top Rated</a>
+                    <a class="nav-link" href="movie_details.html?id=4">Top Rated</a>
                 </li>
                 <li>
                     <a class="nav-link" href="moviesHW.html">Latest</a>
@@ -198,68 +190,52 @@
         </div>
     </div>
 </nav>
-
+<main class="flex-grow-1">
 <h1>Greatest Movies of All Time</h1>
 
-
 <div class="container">
-    <button id="toggleFormButton" class="toggle-form-button">Add Sample Movie</button>
+    <button id="toggleFormButton" class="btn btn-success my-3">Add Sample Movie</button>
     <div id="add-movie-div">
         <form id="addMovieForm">
             <h3> Add Sample Movie</h3>
-            <div class="form-group">
-                <label for="movieId">ID:</label>
-                <input type="number" id="movieId" required>
+            <div class="mb-3"> <label for="movieId">ID:</label>
+                <input type="number" id="movieId" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label for="movieTitle">Title: </label>
-                <input type="text" id="movieTitle" required>
+            <div class="mb-3"> <label for="movieTitle" class="form-label">Title: </label>
+                <input type="text" id="movieTitle" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label for="movieDescription">Description: </label>
-                <textarea type="text" id="movieDescription" required></textarea>
+            <div class="mb-3"> <label for="movieDescription">Description: </label>
+                <textarea type="text" id="movieDescription" class="form-control" required></textarea>
             </div>
-            <div class="form-group">
-                <label for="movieYear">Year: </label>
-                <input type="number" min="1888" id="movieYear" required>
+            <div class="mb-3"> <label for="movieYear">Year: </label>
+                <input type="number" min="1888" id="movieYear" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label for="movieBoxOffice">Box Office ($): </label>
-                <input type="text" id="movieBoxOffice" required>
+            <div class="mb-3"> <label for="movieBoxOffice">Box Office ($): </label>
+                <input type="text" id="movieBoxOffice" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label for="movieDirector">Director: </label>
-                <input type="text" id="movieDirector" required>
+            <div class="mb-3"> <label for="movieDirector">Director: </label>
+                <input type="text" id="movieDirector" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label for="movieBudget">Budget ($): </label>
-                <input type="text" id="movieBudget" required>
+            <div class="mb-3"> <label for="movieBudget">Budget ($): </label>
+                <input type="text" id="movieBudget" class="form-control" required>
             </div>
-
-            <div id="actors-container">
-                <div class="actor-input-group">
-                    <div id="actor-form">
-                    <div class="form-group">
-                        <label for="actor-name">Actor Name: </label>
-                        <input type="text" id="actor-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="actor-role">Role:</label>
-                        <input type="text" id="actor-role" required>
-                    </div>
-                        </div>
-                    <hr>
-                </div>
+            <div class="mb-3"> <label for="actor-name">Actor Name: </label>
+                <input type="text" id="actor-name" class="form-control" required>
+            </div>
+            <div class="mb-3"> <label for="actor-role">Role:</label>
+                <input type="text" id="actor-role" class="form-control" required>
             </div>
             <button type="button" id="addActorBtn" class="btn btn-secondary mt-2">Add Another Actor</button>
             <br>
+            <div id="successActor" class="success-message">Sample movie added successfully!</div>
             <br>
             <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
         </form>
+        <div id="successMessage" class="success-message">Sample movie added successfully!</div>
     </div>
-<div class="container" id="moviesTableBody"></div>
+    <div id="moviesTableBody"></div>
 </div>
-
+</main>
 <footer class="bg-dark text-white p-3 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-9 text-center">

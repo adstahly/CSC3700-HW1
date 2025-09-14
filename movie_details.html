@@ -6,22 +6,25 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        #infoHeader{
+        #infoHeader {
             text-align: left;
             background-image: linear-gradient(to left, #734ea7, #6679e2);
             color: white;
             padding: 30px 0 20px 25px;
         }
+
         .grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             align-items: start;
         }
-        .grid-item{
+
+        .grid-item {
             margin: 25px 10px 10px 10px;
         }
-        .actor-card{
+
+        .actor-card {
             flex-grow: 0;
             width: auto;
             background-color: #f6f7f8;
@@ -29,23 +32,27 @@
             border-radius: 8px;
             border: 1px solid #ebedf0;
         }
-        .actor-container{
+
+        .actor-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             align-items: start;
         }
-        .cast-text{
+
+        .cast-text {
             width: 100%;
             padding: 0;
             margin: 0;
         }
-        .btn-secondary{
+
+        .btn-secondary {
             position: relative;
             left: 10px;
             justify-self: start;
         }
-        .card-title{
+
+        .card-title {
             font-size: 16px;
             font-weight: bold;
         }
@@ -62,6 +69,7 @@
                 loadMovies();
             }
         });
+
         function getIdFromURL() {
             const urlParm = new URLSearchParams(window.location.search);
             return urlParm.get('id');
@@ -85,14 +93,13 @@
 
         function displayMovieInfo(movie) {
             const body = document.getElementById("infoBody")
+            body.classList.add("card");
             body.innerHTML = `
   <h5 class="card-header">Movie Information</h5>
   <div class="card-body">
-    <p class="card-text"><strong>Director: </strong> ${movie.director}</p>
-    <p></p>
-    <p class="card-text"><strong>Budget: </strong> $${movie.budget}</p>
-    <p></p>
-    <p class="card-text"><strong>Box Office: </strong> $${movie.boxOffice}</p>
+    <p class="card-text mb-3"><strong>Director: </strong> ${movie.director}</p>
+    <p class="card-text mb-3"><strong>Budget: </strong> $${movie.budget}</p>
+    <p class="card-text mb-3"><strong>Box Office: </strong> $${movie.boxOffice}</p>
    </div>
   `;
         }
@@ -100,41 +107,31 @@
         function displayMovieCrew(movie) {
             const body = document.getElementById("castCrewBody")
             body.classList.add("actor-container");
-            movie.actors.forEach(actor => {
-                //const card = document.createElement("div");
-                //card.classList.add( "card");
-                let cardBody = document.createElement("div");
-                cardBody.classList.add("card-body", "actor-card");
-                let name = document.createElement("h5");
-                name.classList.add("card-title");
-                let role = document.createElement("h6");
-                role.classList.add("card-subtitle", "mb-2", "text-muted");
-                name.innerHTML = actor.name;
-                role.innerHTML = actor.role;
-                cardBody.appendChild(name);
-                cardBody.appendChild(role);
-                //card.appendChild(cardBody);
-                //body.appendChild(card);
-                body.appendChild(cardBody);
-            });
+            body.innerHTML = `<p class="card-text cast-text"><strong>Main Cast:</strong></p>`;
+            body.innerHTML += movie.actors.map(actor => `
+            <div class="actor-card">
+                <h5 class="card-title">${actor.name}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">${actor.role}</h6>
+            </div>`).join("");
         }
+
         function displayMovieHeader(movie) {
             const body = document.getElementById("infoHeader")
             body.innerHTML = `
 <h1>${movie.title}</h1>
-<h7>Released: ${movie.year}</h7>
-<p></p>
-<p>${movie.description}</p>
+<h7 >Released: ${movie.year}</h7>
+<p class="card-text mt-4">${movie.description}</p>
 <br>`;
         }
-        function displayMovie(movie){
+
+        function displayMovie(movie) {
             displayMovieHeader(movie);
             displayMovieInfo(movie);
             displayMovieCrew(movie);
         }
     </script>
 </head>
-<body onLoad="loadMovies()">
+<body class="d-flex flex-column vh-100">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="moviesHW.html">
@@ -151,31 +148,29 @@
                     <a class="nav-link" href="moviesHW.html">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="movie_details.html?id=${mId}">Movie Details</a>
+                    <a class="nav-link active" href=`movie_details.html?id=${mId}`>Movie Details</a>
                 </li>
                 <li>
                     <a class="nav-link" href="moviesHW.html">Latest</a>
                 </li>
             </ul>
         </div>
+
     </div>
 </nav>
-<div id="infoHeader"></div>
-
-<div class="container grid-container">
-    <div id="infoBody" class="card grid-item"></div>
-    <div class="card grid-item">
-        <h5 class="card-header">Cast & Crew</h5>
-        <div class="card-body" id="castCrewBody">
-            <p class="card-text cast-text"><strong>Main Cast:</strong></p>
+<main class="flex-grow-1">
+    <div id="infoHeader"></div>
+    <div class="container grid-container">
+        <div id="infoBody" class="grid-item"></div>
+        <div class="card grid-item">
+            <h5 class="card-header">Cast & Crew</h5>
+            <div class="card-body" id="castCrewBody"></div>
         </div>
+        <a href="moviesHW.html"
+           class="btn btn-secondary btn-sm">
+            Back to Movies! </a>
     </div>
-    <a href="moviesHW.html"
-       class="btn btn-secondary btn-sm">
-        Back to Movies! </a>
-
-</div>
-
+</main>
 <footer class="bg-dark text-white p-3 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-9 text-center">
