@@ -11,7 +11,7 @@
             text-align: center;
             padding: 25px;
         }
-        #add-movie-form {
+        #add-movie-div {
             background-color: #f5f5f5;
             padding: 20px;
             border-radius: 5px;
@@ -37,57 +37,76 @@
         }
     </style>
     <script>
-        let moviesData = [];
-        const PORT = 3000;
-        let BASE_URL = `http://localhost:${PORT}/movies`;
-
         document.addEventListener('DOMContentLoaded', () => {
+            fetchMovies();
+
             const toggleFormButton = document.getElementById('toggleFormButton');
             toggleFormButton.addEventListener('click', displayAddMovieForm);
+
             const movieForm = document.getElementById('addMovieForm');
-            movieForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const newMovie = createMovie();
-                const savedMovie = await addMovie(newMovie);
-                alert(`${savedMovie.title} saved!`);
-                displayMovies();
-                movieForm.reset();
-            });
-            const actorForm = document.getElementById('actorForm');
-            let actors = []
-            actorForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                createActor();
-                actorForm.reset();
-            })
-            function createActor() {
-                const name = document.getElementById('actorName').value;
-                const role = document.getElementById('actorRole').value;
-                actors.push(name,role);
-                console.log(actors);
-            }
-            function createMovie(){
-                const id = document.getElementById('movieId').value;
-                const title = document.getElementById('movieTitle').value;
-                const director = document.getElementById('movieDirector').value;
-                const budget = parseFloat(document.getElementById('movieBudget').value);
-                const boxOffice = parseFloat(document.getElementById('movieBoxOffice').value);
-                const description = document.getElementById('movieDescription').value;
-                const year = document.getElementById('movieYear').checked;
-                const name = document.getElementById('actor-name').checked;
-                const role = document.getElementById('actor-role').checked;
-                return {
-                    id: id,
-                    title: title,
-                    description: description,
-                    year: year,
-                    boxOffice: boxOffice,
-                    director: director,
-                    budget: budget,
-                    actors: [{name: actors.name, role: actors.role}],
-                };
-            }
+            movieForm.addEventListener('submit', handleMovieSubmit);
+
+            const addActorBtn = document.getElementById('addActorBtn');
+            addActorBtn.addEventListener('click', handleAddActor);
         });
+        const PORT = 3000;
+        let moviesData = [];
+        let actors = []
+        let BASE_URL = `http://localhost:${PORT}/movies`;
+
+        const movieDataString = sessionStorage.getItem('selectedMovie');
+        if (movieDataString) {
+            const movie = JSON.parse(movieDataString);
+            displayMovieCard(movie);
+        }
+
+        function handleMovieSubmit(e) {
+            const movieForm = document.getElementById('addMovieForm');
+            e.preventDefault();
+            const newMovie = createMovie();
+            displayMovieCard(newMovie);
+            movieForm.reset();
+            actors = [];
+        }
+
+
+
+        function handleAddActor() {
+            const actorName = document.getElementById('actor-name');
+            const actorRole = document.getElementById('actor-role');
+            const name = actorName.value;
+            const role = actorRole.value;
+
+            if (name && role) {
+                actors.push({name: name, role: role});
+                console.log(actors);
+                actorName.value = '';
+                actorRole.value = '';
+            } else {
+                alert('Please enter both a name and a role');
+            }
+        }
+
+        function createMovie() {
+            const id = document.getElementById('movieId').value;
+            const title = document.getElementById('movieTitle').value;
+            const director = document.getElementById('movieDirector').value;
+            const budget = document.getElementById('movieBudget').value;
+            const boxOffice = document.getElementById('movieBoxOffice').value;
+            const description = document.getElementById('movieDescription').value;
+            const year = parseInt(document.getElementById('movieYear').value);
+            return {
+                id: id,
+                title: title,
+                description: description,
+                year: year,
+                boxOffice: boxOffice,
+                director: director,
+                budget: budget,
+                actors: actors,
+            };
+        }
+
         async function fetchMovies() {
             try {
                 const response = await fetch(BASE_URL);
@@ -104,53 +123,52 @@
                 console.log("Error Fetching Movies ->", error);
             }
         }
-
-        async function addMovie(newMovie) {
-            const response = await fetch(BASE_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newMovie)
+        function displayMovies() {
+            moviesData.forEach(function (movie) {
+                displayMovieCard(movie);
             });
-
-            return response.json();
         }
 
-        function displayMovies() {
+        function displayMovieCard(movie) {
+            console.log(movie.title);
             let body = document.getElementById("moviesTableBody");
-            console.log(moviesData);
-            moviesData.forEach(function (movie) {
-                const div = document.createElement("div");
-                div.classList.add("card");
-                div.innerHTML = `
+            const div = document.createElement("div");
+            div.classList.add("card");
+            div.innerHTML = `
             <h5 class="card-header">${movie.title} (${movie.year})</h5>
                 <div class="card-body">
                     <p class="card-title">${movie.description} </p>
                     <p></p>
-                    <p class="card-text"><strong>Box Office:</strong> ${movie.boxOffice} <p/>
-                    <a href="movie_details.html?id=${movie.id}"
-                     class="btn btn-primary btn-sm">
-                          View Details </a>
-                     </td>
+                    <p class="card-text"><strong>Box Office:</strong> ${movie.boxOffice} </p>
+                    <button class="btn btn-primary btn-sm view-details-btn">
+                        View Details
+                    </button>
                 </div>`;
-                body.appendChild(div);
+
+            const detailsButton = div.querySelector('.view-details-btn');
+            detailsButton.addEventListener('click', () => {
+                sessionStorage.setItem('selectedMovie', JSON.stringify(movie));
+                window.location.href = `movie_details.html`;
             });
+            console.log(div);
+            body.appendChild(div);
         }
+
         function displayAddMovieForm() {
             const toggleFormButton = document.getElementById('toggleFormButton');
-            const addMovieForm = document.getElementById('add-movie-form');
-            if (addMovieForm.style.display === 'none' || addMovieForm.style.display === ``) {
-                addMovieForm.style.display = 'block';
+            const addMovieDiv = document.getElementById('add-movie-div');
+            if (addMovieDiv.style.display === 'none' || addMovieDiv.style.display === ``) {
+                addMovieDiv.style.display = 'block';
                 toggleFormButton.innerHTML = 'Hide Form';
             } else {
-                addMovieForm.style.display = 'none';
+                addMovieDiv.style.display = 'none';
                 toggleFormButton.innerHTML = 'Add Sample Movie';
             }
         }
+
     </script>
 </head>
-<body onload="fetchMovies()">
+<body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="#">
@@ -182,7 +200,7 @@
 
 <div class="container">
     <button id="toggleFormButton" class="toggle-form-button">Add Sample Movie</button>
-    <div id="add-movie-form">
+    <div id="add-movie-div">
         <form id="addMovieForm">
             <h3> Add Sample Movie</h3>
             <div class="form-group">
@@ -216,7 +234,7 @@
 
             <div id="actors-container">
                 <div class="actor-input-group">
-                    <form id="actor-form">
+                    <div id="actor-form">
                     <div class="form-group">
                         <label for="actor-name">Actor Name:</label>
                         <input type="text" id="actor-name" required>
@@ -225,28 +243,17 @@
                         <label for="actor-role">Role:</label>
                         <input type="text" id="actor-role" required>
                     </div>
-                        </form>
+                        </div>
                     <hr>
                 </div>
             </div>
-
-            <button type="submit" id="add-actor-btn" class="btn btn-secondary mt-2">Add Another Actor</button>
+            <button type="button" id="addActorBtn" class="btn btn-secondary mt-2">Add Another Actor</button>
             <br>
             <br>
             <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
         </form>
     </div>
-<div class="container" id="moviesTableBody">
-<!--    <div class="card">-->
-<!--        <h5 class="card-header">Featured</h5>-->
-<!--        <div class="card-body">-->
-<!--            <p class="card-title">Special title treatment</p>-->
-<!--            <p></p>-->
-<!--            <p style="font-weight: bold" class="card-text">Box Office: </p>-->
-<!--            <a href="#" class="btn btn-primary">View Details</a>-->
-<!--        </div>-->
-<!--    </div>-->
-</div>
+<div class="container" id="moviesTableBody"></div>
 </div>
 
 <footer class="bg-dark text-white p-3 mt-5">
