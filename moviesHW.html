@@ -19,6 +19,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: none;
         }
+
         .success-message {
             background-color: #4CAF50;
             color: white;
@@ -28,6 +29,7 @@
             text-align: center;
             display: none;
         }
+
         .card-title {
             margin-bottom: 1rem;
         }
@@ -51,8 +53,8 @@
             function handleMovieSubmit(e) {
                 e.preventDefault();
                 handleAddActor()
-                const newMovie = createMovie();
-                displayMovieCard(newMovie);
+                createMovie();
+                displayMovies();
                 successActor.style.display = 'none';
                 successMessage.style.display = 'block';
                 movieForm.reset();
@@ -81,7 +83,6 @@
 
                 if (name && role) {
                     actors.push({name: name, role: role});
-                    console.log(actors);
                     actorName.value = '';
                     actorRole.value = '';
                     successActor.style.backgroundColor = '#4CAF50';
@@ -93,8 +94,7 @@
                 successActor.style.display = 'block';
             }
         });
-        const PORT = 3000;
-        const BASE_URL = `http://localhost:${PORT}/movies`;
+
         let moviesData = [];
         let actors = []
 
@@ -106,7 +106,13 @@
             const boxOffice = document.getElementById('movieBoxOffice').value;
             const description = document.getElementById('movieDescription').value;
             const year = parseInt(document.getElementById('movieYear').value);
-            return {
+            if (!validateId(id)) {
+                successMessage.style.display = 'block';
+                successMessage.style.backgroundColor = '#f44336';
+                successMessage.textContent = `Error: ID ${id} already in use.`;
+                return;
+            }
+            const newMovie = {
                 id: id,
                 title: title,
                 description: description,
@@ -115,7 +121,21 @@
                 director: director,
                 budget: budget,
                 actors: actors,
-            };
+            }
+            moviesData.push(newMovie);
+            console.log(moviesData);
+        }
+
+        const PORT = 3000;
+        const BASE_URL = `http://localhost:${PORT}/movies`;
+
+        function validateId(id) {
+            for (const movie of moviesData) {
+                if (movie.id === id) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         async function fetchMovies() {
@@ -136,16 +156,12 @@
         }
 
         function displayMovies() {
-            moviesData.forEach(function (movie) {
-                displayMovieCard(movie);
-            });
-        }
-
-        function displayMovieCard(movie) {
             let body = document.getElementById("moviesTableBody");
-            const div = document.createElement("div");
-            div.classList.add("card", "mt-3");
-            div.innerHTML = `
+            moviesData.forEach(function (movie) {
+
+                const div = document.createElement("div");
+                div.classList.add("card", "mt-3");
+                div.innerHTML = `
             <h5 class="card-header">${movie.title} (${movie.year})</h5>
                 <div class="card-body">
                     <p class="card-title">${movie.description} </p>
@@ -155,12 +171,13 @@
                     </button>
                 </div>`;
 
-            const detailsButton = div.querySelector('.view-details-btn');
-            detailsButton.addEventListener('click', () => {
-                sessionStorage.setItem('selectedMovie', JSON.stringify(movie));
-                window.location.href = `movie_details.html`;
+                const detailsButton = div.querySelector('.view-details-btn');
+                detailsButton.addEventListener('click', () => {
+                    sessionStorage.setItem('selectedMovie', JSON.stringify(movie));
+                    window.location.href = `movie_details.html`;
+                });
+                body.appendChild(div);
             });
-            body.appendChild(div);
         }
     </script>
 </head>
@@ -191,50 +208,50 @@
     </div>
 </nav>
 <main class="flex-grow-1">
-<h1>Greatest Movies of All Time</h1>
+    <h1>Greatest Movies of All Time</h1>
 
-<div class="container">
-    <button id="toggleFormButton" class="btn btn-success my-3">Add Sample Movie</button>
-    <div id="add-movie-div">
-        <form id="addMovieForm">
-            <h3> Add Sample Movie</h3>
-            <div class="mb-3"> <label for="movieId">ID:</label>
-                <input type="number" id="movieId" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="movieTitle" class="form-label">Title: </label>
-                <input type="text" id="movieTitle" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="movieDescription">Description: </label>
-                <textarea type="text" id="movieDescription" class="form-control" required></textarea>
-            </div>
-            <div class="mb-3"> <label for="movieYear">Year: </label>
-                <input type="number" min="1888" id="movieYear" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="movieBoxOffice">Box Office ($): </label>
-                <input type="text" id="movieBoxOffice" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="movieDirector">Director: </label>
-                <input type="text" id="movieDirector" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="movieBudget">Budget ($): </label>
-                <input type="text" id="movieBudget" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="actor-name">Actor Name: </label>
-                <input type="text" id="actor-name" class="form-control" required>
-            </div>
-            <div class="mb-3"> <label for="actor-role">Role:</label>
-                <input type="text" id="actor-role" class="form-control" required>
-            </div>
-            <button type="button" id="addActorBtn" class="btn btn-secondary mt-2">Add Another Actor</button>
-            <br>
-            <div id="successActor" class="success-message">Sample movie added successfully!</div>
-            <br>
-            <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
-        </form>
-        <div id="successMessage" class="success-message">Sample movie added successfully!</div>
+    <div class="container">
+        <button id="toggleFormButton" class="btn btn-success my-3">Add Sample Movie</button>
+        <div id="add-movie-div">
+            <form id="addMovieForm">
+                <h3> Add Sample Movie</h3>
+                <div class="mb-3"><label for="movieId">ID:</label>
+                    <input type="number" id="movieId" min="8" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="movieTitle" class="form-label">Title: </label>
+                    <input type="text" id="movieTitle" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="movieDescription">Description: </label>
+                    <textarea type="text" id="movieDescription" class="form-control" required></textarea>
+                </div>
+                <div class="mb-3"><label for="movieYear">Year: </label>
+                    <input type="number" min="1888" id="movieYear" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="movieBoxOffice">Box Office ($): </label>
+                    <input type="text" id="movieBoxOffice" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="movieDirector">Director: </label>
+                    <input type="text" id="movieDirector" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="movieBudget">Budget ($): </label>
+                    <input type="text" id="movieBudget" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="actor-name">Actor Name: </label>
+                    <input type="text" id="actor-name" class="form-control" required>
+                </div>
+                <div class="mb-3"><label for="actor-role">Role:</label>
+                    <input type="text" id="actor-role" class="form-control" required>
+                </div>
+                <button type="button" id="addActorBtn" class="btn btn-secondary mt-2">Add Another Actor</button>
+                <br>
+                <div id="successActor" class="success-message">Sample movie added successfully!</div>
+                <br>
+                <button type="submit" class="btn btn-primary mt-0">Add Movie</button>
+            </form>
+            <div id="successMessage" class="success-message">Sample movie added successfully!</div>
+        </div>
+        <div id="moviesTableBody"></div>
     </div>
-    <div id="moviesTableBody"></div>
-</div>
 </main>
 <footer class="bg-dark text-white p-3 mt-5">
     <div class="row justify-content-center">

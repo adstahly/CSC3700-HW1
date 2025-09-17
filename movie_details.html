@@ -68,6 +68,12 @@
             } else {
                 loadMovies();
             }
+
+            const detailsLink = document.getElementById('detailsLink');
+            detailsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadMovies();
+            });
         });
 
         function getIdFromURL() {
@@ -148,7 +154,7 @@
                     <a class="nav-link" href="moviesHW.html">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href=`movie_details.html?id=${mId}`>Movie Details</a>
+                    <a id="detailsLink" class="nav-link active" href="#">Movie Details</a>
                 </li>
                 <li>
                     <a class="nav-link" href="moviesHW.html">Latest</a>
